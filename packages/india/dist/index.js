@@ -143,44 +143,6 @@ var useMousePosition = () => {
 var mouseTrack_default = useMousePosition;
 
 // src/India.tsx
-var import_react3 = require("react");
-var controlButtonStyle = {
-  width: 28,
-  height: 28,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "white",
-  border: "1px solid #e2e8f0",
-  borderRadius: 4,
-  cursor: "pointer",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "#374151",
-  transition: "background-color 0.15s ease"
-};
-var controlButtonHoverStyle = {
-  backgroundColor: "#f3f4f6"
-};
-var controlsContainerStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(3, 28px)",
-  gridTemplateRows: "repeat(3, 28px)",
-  gap: 2,
-  padding: 4,
-  backgroundColor: "rgba(255, 255, 255, 0.9)",
-  borderRadius: 6,
-  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-};
-var hintStyleBase = {
-  position: "fixed",
-  backgroundColor: "white",
-  padding: "10px",
-  borderRadius: 5,
-  border: "1px solid #ccc",
-  pointerEvents: "none",
-  zIndex: 1e3
-};
 var getStrokeProperties = (borderStyle) => {
   switch (borderStyle) {
     case "dashed":
@@ -195,549 +157,257 @@ var getStrokeProperties = (borderStyle) => {
       return { strokeDasharray: "none" };
   }
 };
+function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady) {
+  const [zoom, setZoom] = (0, import_react2.useState)(1);
+  const [panX, setPanX] = (0, import_react2.useState)(0);
+  const [panY, setPanY] = (0, import_react2.useState)(0);
+  const zoomIn = (0, import_react2.useCallback)(() => {
+    setZoom((z) => Math.min(z + zoomStep, maxZoom));
+  }, [zoomStep, maxZoom]);
+  const zoomOut = (0, import_react2.useCallback)(() => {
+    setZoom((z) => Math.max(z - zoomStep, minZoom));
+  }, [zoomStep, minZoom]);
+  const reset = (0, import_react2.useCallback)(() => {
+    setZoom(1);
+    setPanX(0);
+    setPanY(0);
+  }, []);
+  const pan = (0, import_react2.useCallback)(
+    (direction) => {
+      const delta = panStep;
+      switch (direction) {
+        case "up":
+          setPanY((p) => p + delta);
+          break;
+        case "down":
+          setPanY((p) => p - delta);
+          break;
+        case "left":
+          setPanX((p) => p + delta);
+          break;
+        case "right":
+          setPanX((p) => p - delta);
+          break;
+      }
+    },
+    [panStep]
+  );
+  const setZoomValue = (0, import_react2.useCallback)(
+    (value) => setZoom(Math.min(Math.max(value, minZoom), maxZoom)),
+    [minZoom, maxZoom]
+  );
+  const setPanValue = (0, import_react2.useCallback)((x, y) => {
+    setPanX(x);
+    setPanY(y);
+  }, []);
+  (0, import_react2.useEffect)(() => {
+    if (onZoomPanReady && enableZoom) {
+      onZoomPanReady({
+        zoom,
+        panX,
+        panY,
+        zoomIn,
+        zoomOut,
+        reset,
+        pan,
+        setZoom: setZoomValue,
+        setPan: setPanValue,
+        minZoom,
+        maxZoom
+      });
+    }
+  }, [
+    zoom,
+    panX,
+    panY,
+    zoomIn,
+    zoomOut,
+    reset,
+    pan,
+    setZoomValue,
+    setPanValue,
+    minZoom,
+    maxZoom,
+    onZoomPanReady,
+    enableZoom
+  ]);
+  const wrapperStyle = enableZoom ? {
+    transform: `scale(${zoom}) translate(${panX}px, ${panY}px)`,
+    transformOrigin: "center center",
+    transition: "transform 0.15s ease-out"
+  } : {};
+  return { wrapperStyle };
+}
 var India = ({
   type,
-  size = constants.WIDTH,
+  width = constants.WIDTH,
+  height,
   mapColor = constants.MAPCOLOR,
   strokeColor = constants.STROKE_COLOR,
   strokeWidth = constants.STROKE_WIDTH,
-  hoverColor,
-  selectColor,
-  hints,
-  hintTextColor,
-  hintBackgroundColor,
-  hintPadding,
-  hintBorderRadius,
-  onSelect,
+  hoverColor = constants.HOVERCOLOR,
+  selectColor = constants.SELECTED_COLOR,
+  borderStyle,
   cityColors = {},
   disableClick = false,
   disableHover = false,
-  borderStyle,
-  // New props
-  onHover,
-  renderTooltip,
-  enableZoom = false,
-  showControls = false,
-  controlsPosition = "bottom-right",
-  minZoom = 1,
-  maxZoom = 3,
-  zoomStep = 0.25,
-  panStep = 20
-}) => {
-  if (type === "select-single") {
-    return /* @__PURE__ */ import_react2.default.createElement(
-      IndiaSingle,
-      {
-        type: "select-single",
-        size,
-        mapColor,
-        strokeColor,
-        strokeWidth,
-        hoverColor,
-        selectColor,
-        hints,
-        hintTextColor,
-        hintBackgroundColor,
-        hintPadding,
-        hintBorderRadius,
-        onSelect,
-        cityColors,
-        disableClick,
-        disableHover,
-        borderStyle,
-        onHover,
-        renderTooltip,
-        enableZoom,
-        showControls,
-        controlsPosition,
-        minZoom,
-        maxZoom,
-        zoomStep,
-        panStep
-      }
-    );
-  } else if (type === "select-multiple") {
-    return /* @__PURE__ */ import_react2.default.createElement(
-      IndiaMultiple,
-      {
-        type: "select-multiple",
-        size,
-        mapColor,
-        strokeColor,
-        strokeWidth,
-        hoverColor,
-        selectColor,
-        hints,
-        hintTextColor,
-        hintBackgroundColor,
-        hintPadding,
-        hintBorderRadius,
-        onSelect,
-        cityColors,
-        disableClick,
-        disableHover,
-        borderStyle,
-        onHover,
-        renderTooltip,
-        enableZoom,
-        showControls,
-        controlsPosition,
-        minZoom,
-        maxZoom,
-        zoomStep,
-        panStep
-      }
-    );
-  } else {
-    return null;
-  }
-};
-var IndiaSingle = ({
-  size,
-  mapColor,
-  strokeColor,
-  selectColor,
-  strokeWidth,
-  hoverColor,
-  hints,
   onSelect,
-  hintTextColor,
-  hintBackgroundColor,
-  hintPadding,
-  hintBorderRadius,
-  cityColors,
-  disableClick,
-  disableHover,
-  borderStyle,
-  // New props
   onHover,
   renderTooltip,
   enableZoom = false,
-  showControls = false,
-  controlsPosition = "bottom-right",
   minZoom = 1,
   maxZoom = 3,
   zoomStep = 0.25,
-  panStep = 20
+  panStep = 20,
+  onZoomPanReady
 }) => {
-  const instanceId = (0, import_react3.useId)().replace(/:/g, "");
+  const instanceId = (0, import_react2.useId)().replace(/:/g, "");
   const { x, y } = mouseTrack_default();
-  const [stateHovered, setStateHovered] = (0, import_react2.useState)(null);
-  const [selectedState, setSelectedState] = (0, import_react2.useState)(null);
   const [viewBox, setViewBox] = (0, import_react2.useState)("0 0 100 100");
+  const [stateHovered, setStateHovered] = (0, import_react2.useState)(null);
+  const lastHoveredRef = (0, import_react2.useRef)(null);
   const strokeProps = (0, import_react2.useMemo)(() => getStrokeProperties(borderStyle), [borderStyle]);
-  const [zoom, setZoom] = (0, import_react2.useState)(1);
-  const [panX, setPanX] = (0, import_react2.useState)(0);
-  const [panY, setPanY] = (0, import_react2.useState)(0);
+  const [selectedSingle, setSelectedSingle] = (0, import_react2.useState)(null);
+  const [selectedMultiple, setSelectedMultiple] = (0, import_react2.useState)([]);
+  const isSelected = (state) => type === "select-single" ? selectedSingle === state : selectedMultiple.includes(state);
+  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady);
   (0, import_react2.useEffect)(() => {
-    const svg = document.getElementById(`svg2-${instanceId}`);
+    const svg = document.getElementById(`svg-${instanceId}`);
     if (svg) {
       const bbox = svg.getBBox();
       setViewBox(`${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
     }
   }, [instanceId]);
-  const mapStyle = (0, import_react2.useMemo)(
-    () => ({
-      width: size,
-      stroke: strokeColor,
-      strokeWidth,
-      ...strokeProps
-    }),
-    [size, strokeColor, strokeWidth, strokeProps]
-  );
-  const hintStyle = {
-    ...hintStyleBase,
-    backgroundColor: hintBackgroundColor || hintStyleBase.backgroundColor,
-    padding: hintPadding || hintStyleBase.padding,
-    borderRadius: hintBorderRadius || hintStyleBase.borderRadius,
-    color: hintTextColor || "black",
-    top: y + 20,
-    left: x + 20
-  };
   (0, import_react2.useEffect)(() => {
     stateCode.forEach((state) => {
       const path = document.getElementById(`${state}-${instanceId}`);
-      if (path) {
-        path.style.fill = cityColors[state] || mapColor;
-      }
+      if (!path) return;
+      if (state === lastHoveredRef.current || isSelected(state)) return;
+      path.style.fill = cityColors[state] || mapColor;
     });
-  }, [cityColors, mapColor, instanceId]);
+  }, [cityColors, mapColor, instanceId, selectedSingle, selectedMultiple]);
   (0, import_react2.useEffect)(() => {
-    if (selectedState) {
-      const path = document.getElementById(`${selectedState}-${instanceId}`);
-      if (path) {
-        path.style.fill = selectColor || constants.SELECTED_COLOR;
-      }
-    }
-  }, [selectedState, selectColor, instanceId]);
-  const handleMouseEnter = (0, import_react2.useCallback)(
-    (hoverStateId) => {
-      const path = document.getElementById(`${hoverStateId}-${instanceId}`);
-      setStateHovered(hoverStateId);
-      onHover?.(hoverStateId);
-      if (path && !disableHover) {
-        path.style.fill = selectedState === hoverStateId ? selectColor || constants.SELECTED_COLOR : hoverColor || constants.HOVERCOLOR;
-      }
-    },
-    [instanceId, disableHover, selectedState, selectColor, hoverColor, onHover]
-  );
-  const handleMouseLeave = (0, import_react2.useCallback)(
-    (hoverStateId) => {
-      const path = document.getElementById(`${hoverStateId}-${instanceId}`);
-      setStateHovered(null);
-      onHover?.(null);
-      if (path && !disableHover) {
-        path.style.fill = selectedState === hoverStateId ? selectColor || constants.SELECTED_COLOR : cityColors[hoverStateId] || mapColor;
-      }
-    },
-    [instanceId, disableHover, selectedState, selectColor, cityColors, mapColor, onHover]
-  );
-  const handleClick = (stateCode2) => {
-    if (disableClick) return;
-    if (selectedState === stateCode2) {
-      const path = document.getElementById(`${stateCode2}-${instanceId}`);
-      if (path) {
-        path.style.fill = cityColors[stateCode2] || mapColor;
-      }
-      setSelectedState(null);
-      if (onSelect) {
-        onSelect(null);
-      }
-    } else {
-      if (selectedState) {
-        const previousPath = document.getElementById(`${selectedState}-${instanceId}`);
-        if (previousPath) {
-          previousPath.style.fill = cityColors[selectedState] || mapColor;
-        }
-      }
-      setSelectedState(stateCode2);
-      if (onSelect) {
-        onSelect(stateCode2);
-      }
-    }
-  };
-  const handleZoomIn = (0, import_react2.useCallback)(() => {
-    setZoom((z) => Math.min(z + zoomStep, maxZoom));
-  }, [zoomStep, maxZoom]);
-  const handleZoomOut = (0, import_react2.useCallback)(() => {
-    setZoom((z) => Math.max(z - zoomStep, minZoom));
-  }, [zoomStep, minZoom]);
-  const handleZoomReset = (0, import_react2.useCallback)(() => {
-    setZoom(1);
-    setPanX(0);
-    setPanY(0);
-  }, []);
-  const handlePan = (0, import_react2.useCallback)(
-    (direction) => {
-      switch (direction) {
-        case "up":
-          setPanY((p) => p + panStep);
-          break;
-        case "down":
-          setPanY((p) => p - panStep);
-          break;
-        case "left":
-          setPanX((p) => p + panStep);
-          break;
-        case "right":
-          setPanX((p) => p - panStep);
-          break;
-      }
-    },
-    [panStep]
-  );
-  const getControlsPositionStyle = () => {
-    const base = { position: "absolute", zIndex: 10 };
-    switch (controlsPosition) {
-      case "top-left":
-        return { ...base, top: 8, left: 8 };
-      case "top-right":
-        return { ...base, top: 8, right: 8 };
-      case "bottom-left":
-        return { ...base, bottom: 8, left: 8 };
-      case "bottom-right":
-      default:
-        return { ...base, bottom: 8, right: 8 };
-    }
-  };
-  const ControlButton = ({
-    onClick,
-    children,
-    disabled = false
-  }) => {
-    const [isHovered, setIsHovered] = (0, import_react2.useState)(false);
-    return /* @__PURE__ */ import_react2.default.createElement(
-      "button",
-      {
-        style: {
-          ...controlButtonStyle,
-          ...isHovered && !disabled ? controlButtonHoverStyle : {},
-          ...disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}
-        },
-        onMouseEnter: () => setIsHovered(true),
-        onMouseLeave: () => setIsHovered(false),
-        onClick,
-        disabled,
-        type: "button"
-      },
-      children
-    );
-  };
-  const containerStyle = {
-    position: "relative",
-    overflow: "hidden",
-    width: size
-  };
-  const svgWrapperStyle = enableZoom ? {
-    transform: `scale(${zoom}) translate(${panX}px, ${panY}px)`,
-    transformOrigin: "center center",
-    transition: "transform 0.15s ease-out"
-  } : {};
-  return /* @__PURE__ */ import_react2.default.createElement("div", { style: containerStyle }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "map", style: { ...mapStyle, ...svgWrapperStyle } }, /* @__PURE__ */ import_react2.default.createElement("svg", { version: "1.1", id: `svg2-${instanceId}`, x: "0px", y: "0px", viewBox }, stateCode?.map((code, index) => /* @__PURE__ */ import_react2.default.createElement(
-    "path",
-    {
-      key: index,
-      onClick: () => handleClick(code),
-      onMouseEnter: () => handleMouseEnter(code),
-      onMouseLeave: () => handleMouseLeave(code),
-      id: `${code}-${instanceId}`,
-      d: drawPath[code],
-      style: {
-        fill: cityColors[code] || mapColor,
-        cursor: disableClick ? "default" : "pointer",
-        ...strokeProps
-      }
-    }
-  )))), showControls && enableZoom && /* @__PURE__ */ import_react2.default.createElement("div", { style: { ...controlsContainerStyle, ...getControlsPositionStyle() } }, /* @__PURE__ */ import_react2.default.createElement("div", null), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("up") }, "\u2191"), /* @__PURE__ */ import_react2.default.createElement("div", null), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("left") }, "\u2190"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: handleZoomReset }, "\u27F2"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("right") }, "\u2192"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: handleZoomOut, disabled: zoom <= minZoom }, "\u2212"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("down") }, "\u2193"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: handleZoomIn, disabled: zoom >= maxZoom }, "+")), hints && stateHovered && /* @__PURE__ */ import_react2.default.createElement("div", { style: hintStyle }, stateHovered), renderTooltip?.({
-    state: stateHovered,
-    position: { x, y },
-    isHovered: !!stateHovered,
-    isSelected: !!selectedState && selectedState === stateHovered
-  }));
-};
-var IndiaMultiple = ({
-  size,
-  mapColor,
-  strokeColor,
-  selectColor,
-  strokeWidth,
-  hoverColor,
-  hints,
-  hintTextColor,
-  hintBackgroundColor,
-  hintPadding,
-  hintBorderRadius,
-  onSelect,
-  cityColors,
-  disableClick,
-  disableHover,
-  borderStyle,
-  // New props
-  onHover,
-  renderTooltip,
-  enableZoom = false,
-  showControls = false,
-  controlsPosition = "bottom-right",
-  minZoom = 1,
-  maxZoom = 3,
-  zoomStep = 0.25,
-  panStep = 20
-}) => {
-  const instanceId = (0, import_react3.useId)().replace(/:/g, "");
-  const { x, y } = mouseTrack_default();
-  const [selectedStates, setSelectedStates] = (0, import_react2.useState)([]);
-  const [stateHovered, setStateHovered] = (0, import_react2.useState)(null);
-  const [viewBox, setViewBox] = (0, import_react2.useState)("0 0 100 100");
-  const strokeProps = (0, import_react2.useMemo)(() => getStrokeProperties(borderStyle), [borderStyle]);
-  const [zoom, setZoom] = (0, import_react2.useState)(1);
-  const [panX, setPanX] = (0, import_react2.useState)(0);
-  const [panY, setPanY] = (0, import_react2.useState)(0);
-  (0, import_react2.useEffect)(() => {
-    const svg = document.getElementById(`svg2-${instanceId}`);
-    if (svg) {
-      const bbox = svg.getBBox();
-      setViewBox(`${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
-    }
-  }, [instanceId]);
-  const mapStyle = (0, import_react2.useMemo)(
-    () => ({
-      width: size,
-      stroke: strokeColor,
-      strokeWidth,
-      ...strokeProps
-    }),
-    [size, strokeColor, strokeWidth, strokeProps]
-  );
-  const hintStyle = {
-    ...hintStyleBase,
-    backgroundColor: hintBackgroundColor || hintStyleBase.backgroundColor,
-    padding: hintPadding || hintStyleBase.padding,
-    borderRadius: hintBorderRadius || hintStyleBase.borderRadius,
-    color: hintTextColor || "black",
-    top: y + 20,
-    left: x + 20
-  };
-  (0, import_react2.useEffect)(() => {
-    stateCode.forEach((state) => {
-      const path = document.getElementById(`${state}-${instanceId}`);
-      if (path) {
-        path.style.fill = cityColors[state] || mapColor;
-      }
-    });
-  }, [cityColors, mapColor, instanceId]);
-  (0, import_react2.useEffect)(() => {
-    selectedStates.forEach((selectedState) => {
-      const path = document.getElementById(`${selectedState}-${instanceId}`);
-      if (path) {
-        path.style.fill = selectColor || constants.SELECTED_COLOR;
-      }
-    });
-  }, [selectedStates, selectColor, instanceId]);
-  const handleMouseEnter = (0, import_react2.useCallback)(
-    (hoverStateId) => {
-      const path = document.getElementById(`${hoverStateId}-${instanceId}`);
-      setStateHovered(hoverStateId);
-      onHover?.(hoverStateId);
-      if (path && !disableHover) {
-        path.style.fill = selectedStates.includes(hoverStateId) ? selectColor || constants.SELECTED_COLOR : hoverColor || constants.HOVERCOLOR;
-      }
-    },
-    [instanceId, disableHover, selectedStates, selectColor, hoverColor, onHover]
-  );
-  const handleMouseLeave = (0, import_react2.useCallback)(
-    (hoverStateId) => {
-      const path = document.getElementById(`${hoverStateId}-${instanceId}`);
-      setStateHovered(null);
-      onHover?.(null);
-      if (path && !disableHover) {
-        path.style.fill = selectedStates.includes(hoverStateId) ? selectColor || constants.SELECTED_COLOR : cityColors[hoverStateId] || mapColor;
-      }
-    },
-    [instanceId, disableHover, selectedStates, selectColor, cityColors, mapColor, onHover]
-  );
-  const handleClick = (stateCode2) => {
-    if (disableClick) return;
-    if (selectedStates.includes(stateCode2)) {
-      const updatedSelectedStates = selectedStates.filter((state) => state !== stateCode2);
-      const path = document.getElementById(`${stateCode2}-${instanceId}`);
-      if (path) {
-        path.style.fill = cityColors[stateCode2] || mapColor;
-      }
-      setSelectedStates(updatedSelectedStates);
-      if (onSelect) {
-        onSelect(stateCode2, updatedSelectedStates);
-      }
-    } else {
-      setSelectedStates((prevStates) => {
-        const updatedStates = [...prevStates, stateCode2];
-        const path = document.getElementById(`${stateCode2}-${instanceId}`);
-        if (path) {
-          path.style.fill = selectColor || constants.SELECTED_COLOR;
-        }
-        if (onSelect) {
-          onSelect(stateCode2, updatedStates);
-        }
-        return updatedStates;
+    if (type === "select-single" && selectedSingle) {
+      const path = document.getElementById(`${selectedSingle}-${instanceId}`);
+      if (path) path.style.fill = selectColor;
+    } else if (type === "select-multiple") {
+      selectedMultiple.forEach((state) => {
+        const path = document.getElementById(`${state}-${instanceId}`);
+        if (path) path.style.fill = selectColor;
       });
     }
-  };
-  const handleZoomIn = (0, import_react2.useCallback)(() => {
-    setZoom((z) => Math.min(z + zoomStep, maxZoom));
-  }, [zoomStep, maxZoom]);
-  const handleZoomOut = (0, import_react2.useCallback)(() => {
-    setZoom((z) => Math.max(z - zoomStep, minZoom));
-  }, [zoomStep, minZoom]);
-  const handleZoomReset = (0, import_react2.useCallback)(() => {
-    setZoom(1);
-    setPanX(0);
-    setPanY(0);
-  }, []);
-  const handlePan = (0, import_react2.useCallback)(
-    (direction) => {
-      switch (direction) {
-        case "up":
-          setPanY((p) => p + panStep);
-          break;
-        case "down":
-          setPanY((p) => p - panStep);
-          break;
-        case "left":
-          setPanX((p) => p + panStep);
-          break;
-        case "right":
-          setPanX((p) => p - panStep);
-          break;
+  }, [selectedSingle, selectedMultiple, selectColor, instanceId, type]);
+  const handleMouseEnter = (0, import_react2.useCallback)(
+    (stateId) => {
+      lastHoveredRef.current = stateId;
+      setStateHovered(stateId);
+      onHover?.(stateId);
+      if (!disableHover) {
+        const path = document.getElementById(`${stateId}-${instanceId}`);
+        if (path) {
+          path.style.fill = isSelected(stateId) ? selectColor : hoverColor;
+        }
       }
     },
-    [panStep]
+    [instanceId, disableHover, selectColor, hoverColor, onHover, selectedSingle, selectedMultiple, type]
   );
-  const getControlsPositionStyle = () => {
-    const base = { position: "absolute", zIndex: 10 };
-    switch (controlsPosition) {
-      case "top-left":
-        return { ...base, top: 8, left: 8 };
-      case "top-right":
-        return { ...base, top: 8, right: 8 };
-      case "bottom-left":
-        return { ...base, bottom: 8, left: 8 };
-      case "bottom-right":
-      default:
-        return { ...base, bottom: 8, right: 8 };
-    }
-  };
-  const ControlButton = ({
-    onClick,
-    children,
-    disabled = false
-  }) => {
-    const [isHovered, setIsHovered] = (0, import_react2.useState)(false);
-    return /* @__PURE__ */ import_react2.default.createElement(
-      "button",
-      {
-        style: {
-          ...controlButtonStyle,
-          ...isHovered && !disabled ? controlButtonHoverStyle : {},
-          ...disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}
-        },
-        onMouseEnter: () => setIsHovered(true),
-        onMouseLeave: () => setIsHovered(false),
-        onClick,
-        disabled,
-        type: "button"
-      },
-      children
-    );
-  };
+  const handleMouseLeave = (0, import_react2.useCallback)(
+    (stateId) => {
+      if (lastHoveredRef.current === stateId) {
+        lastHoveredRef.current = null;
+        setStateHovered(null);
+        onHover?.(null);
+      }
+      if (!disableHover) {
+        const path = document.getElementById(`${stateId}-${instanceId}`);
+        if (path) {
+          path.style.fill = isSelected(stateId) ? selectColor : cityColors[stateId] || mapColor;
+        }
+      }
+    },
+    [instanceId, disableHover, selectColor, cityColors, mapColor, onHover, selectedSingle, selectedMultiple, type]
+  );
+  const handleClick = (0, import_react2.useCallback)(
+    (stateId) => {
+      if (disableClick) return;
+      if (type === "select-single") {
+        const newSelected = selectedSingle === stateId ? null : stateId;
+        if (selectedSingle && selectedSingle !== stateId) {
+          const prevPath = document.getElementById(`${selectedSingle}-${instanceId}`);
+          if (prevPath) prevPath.style.fill = cityColors[selectedSingle] || mapColor;
+        }
+        if (selectedSingle === stateId) {
+          const path = document.getElementById(`${stateId}-${instanceId}`);
+          if (path) path.style.fill = cityColors[stateId] || mapColor;
+        }
+        setSelectedSingle(newSelected);
+        onSelect?.(newSelected);
+      } else {
+        if (selectedMultiple.includes(stateId)) {
+          const updated = selectedMultiple.filter((s) => s !== stateId);
+          const path = document.getElementById(`${stateId}-${instanceId}`);
+          if (path) path.style.fill = cityColors[stateId] || mapColor;
+          setSelectedMultiple(updated);
+          onSelect?.(stateId, updated);
+        } else {
+          const updated = [...selectedMultiple, stateId];
+          const path = document.getElementById(`${stateId}-${instanceId}`);
+          if (path) path.style.fill = selectColor;
+          setSelectedMultiple(updated);
+          onSelect?.(stateId, updated);
+        }
+      }
+    },
+    [type, selectedSingle, selectedMultiple, disableClick, instanceId, cityColors, mapColor, selectColor, onSelect]
+  );
   const containerStyle = {
     position: "relative",
     overflow: "hidden",
-    width: size
+    width,
+    height,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   };
-  const svgWrapperStyle = enableZoom ? {
-    transform: `scale(${zoom}) translate(${panX}px, ${panY}px)`,
-    transformOrigin: "center center",
-    transition: "transform 0.15s ease-out"
-  } : {};
-  return /* @__PURE__ */ import_react2.default.createElement("div", { style: containerStyle }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "map", style: { ...mapStyle, ...svgWrapperStyle } }, /* @__PURE__ */ import_react2.default.createElement("svg", { version: "1.1", id: `svg2-${instanceId}`, x: "0px", y: "0px", viewBox }, stateCode?.map((code, index) => /* @__PURE__ */ import_react2.default.createElement(
+  const mapStyle = {
+    width: "100%",
+    height: "100%",
+    maxWidth: width,
+    maxHeight: height,
+    stroke: strokeColor,
+    strokeWidth,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...strokeProps,
+    ...wrapperStyle
+  };
+  const svgStyle = {
+    width: "100%",
+    height: "100%",
+    maxWidth: "100%",
+    maxHeight: "100%"
+  };
+  return /* @__PURE__ */ import_react2.default.createElement("div", { style: containerStyle }, /* @__PURE__ */ import_react2.default.createElement("div", { style: mapStyle }, /* @__PURE__ */ import_react2.default.createElement("svg", { id: `svg-${instanceId}`, viewBox, style: svgStyle, preserveAspectRatio: "xMidYMid meet" }, stateCode.map((code) => /* @__PURE__ */ import_react2.default.createElement(
     "path",
     {
-      key: index,
+      key: code,
+      id: `${code}-${instanceId}`,
+      d: drawPath[code],
       onClick: () => handleClick(code),
       onMouseEnter: () => handleMouseEnter(code),
       onMouseLeave: () => handleMouseLeave(code),
-      id: `${code}-${instanceId}`,
-      d: drawPath[code],
       style: {
         fill: cityColors[code] || mapColor,
         cursor: disableClick ? "default" : "pointer",
         ...strokeProps
       }
     }
-  )))), showControls && enableZoom && /* @__PURE__ */ import_react2.default.createElement("div", { style: { ...controlsContainerStyle, ...getControlsPositionStyle() } }, /* @__PURE__ */ import_react2.default.createElement("div", null), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("up") }, "\u2191"), /* @__PURE__ */ import_react2.default.createElement("div", null), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("left") }, "\u2190"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: handleZoomReset }, "\u27F2"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("right") }, "\u2192"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: handleZoomOut, disabled: zoom <= minZoom }, "\u2212"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: () => handlePan("down") }, "\u2193"), /* @__PURE__ */ import_react2.default.createElement(ControlButton, { onClick: handleZoomIn, disabled: zoom >= maxZoom }, "+")), hints && stateHovered && /* @__PURE__ */ import_react2.default.createElement("div", { style: hintStyle }, stateHovered), renderTooltip?.({
+  )))), renderTooltip?.({
     state: stateHovered,
     position: { x, y },
     isHovered: !!stateHovered,
-    isSelected: selectedStates.includes(stateHovered || "")
+    isSelected: stateHovered ? isSelected(stateHovered) : false
   }));
 };
 var India_default = India;
