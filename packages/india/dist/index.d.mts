@@ -47,8 +47,8 @@ interface IndiaProps {
     maxZoom?: number;
     zoomStep?: number;
     panStep?: number;
-    onZoomPanReady?: (controls: ZoomPanControls) => void;
+    onZoomPanChange?: (controls: ZoomPanControls) => void;
 }
-declare const India: ({ type, width, height, mapColor, strokeColor, strokeWidth, hoverColor, selectColor, borderStyle, cityColors, disableClick, disableHover, onSelect, onHover, renderTooltip, enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady, }: IndiaProps) => React.JSX.Element;
+declare const India: ({ type, width, height, mapColor, strokeColor, strokeWidth, hoverColor, selectColor, borderStyle, cityColors, disableClick, disableHover, onSelect, onHover, renderTooltip, enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange, }: IndiaProps) => React.JSX.Element;
 
 export { type IndiaProps, type TooltipRenderProps, type ZoomPanControls, India as default };

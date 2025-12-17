@@ -121,7 +121,7 @@ var getStrokeProperties = (borderStyle) => {
       return { strokeDasharray: "none" };
   }
 };
-function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady) {
+function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange) {
   const [zoom, setZoom] = useState2(1);
   const [panX, setPanX] = useState2(0);
   const [panY, setPanY] = useState2(0);
@@ -165,8 +165,8 @@ function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanRe
     setPanY(y);
   }, []);
   useEffect2(() => {
-    if (onZoomPanReady && enableZoom) {
-      onZoomPanReady({
+    if (onZoomPanChange && enableZoom) {
+      onZoomPanChange({
         zoom,
         panX,
         panY,
@@ -192,7 +192,7 @@ function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanRe
     setPanValue,
     minZoom,
     maxZoom,
-    onZoomPanReady,
+    onZoomPanChange,
     enableZoom
   ]);
   const wrapperStyle = enableZoom ? {
@@ -223,7 +223,7 @@ var India = ({
   maxZoom = 3,
   zoomStep = 0.25,
   panStep = 20,
-  onZoomPanReady
+  onZoomPanChange
 }) => {
   const instanceId = useId().replace(/:/g, "");
   const { x, y } = mouseTrack_default();
@@ -233,8 +233,11 @@ var India = ({
   const strokeProps = useMemo(() => getStrokeProperties(borderStyle), [borderStyle]);
   const [selectedSingle, setSelectedSingle] = useState2(null);
   const [selectedMultiple, setSelectedMultiple] = useState2([]);
-  const isSelected = (state) => type === "select-single" ? selectedSingle === state : selectedMultiple.includes(state);
-  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady);
+  const isSelected = useCallback(
+    (state) => type === "select-single" ? selectedSingle === state : selectedMultiple.includes(state),
+    [type, selectedSingle, selectedMultiple]
+  );
+  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange);
   useEffect2(() => {
     const svg = document.getElementById(`svg-${instanceId}`);
     if (svg) {
@@ -273,7 +276,7 @@ var India = ({
         }
       }
     },
-    [instanceId, disableHover, selectColor, hoverColor, onHover, selectedSingle, selectedMultiple, type]
+    [instanceId, disableHover, selectColor, hoverColor, onHover, isSelected]
   );
   const handleMouseLeave = useCallback(
     (stateId) => {
@@ -289,7 +292,7 @@ var India = ({
         }
       }
     },
-    [instanceId, disableHover, selectColor, cityColors, mapColor, onHover, selectedSingle, selectedMultiple, type]
+    [instanceId, disableHover, selectColor, cityColors, mapColor, onHover, isSelected]
   );
   const handleClick = useCallback(
     (stateId) => {
@@ -377,7 +380,7 @@ var India = ({
 var India_default = India;
 
 // src/index.ts
-var index_default = India_default;
+var src_default = India_default;
 export {
-  index_default as default
+  src_default as default
 };

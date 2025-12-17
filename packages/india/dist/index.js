@@ -28,11 +28,11 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
-var index_exports = {};
-__export(index_exports, {
-  default: () => index_default
+var src_exports = {};
+__export(src_exports, {
+  default: () => src_default
 });
-module.exports = __toCommonJS(index_exports);
+module.exports = __toCommonJS(src_exports);
 
 // src/India.tsx
 var import_react2 = __toESM(require("react"));
@@ -157,7 +157,7 @@ var getStrokeProperties = (borderStyle) => {
       return { strokeDasharray: "none" };
   }
 };
-function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady) {
+function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange) {
   const [zoom, setZoom] = (0, import_react2.useState)(1);
   const [panX, setPanX] = (0, import_react2.useState)(0);
   const [panY, setPanY] = (0, import_react2.useState)(0);
@@ -201,8 +201,8 @@ function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanRe
     setPanY(y);
   }, []);
   (0, import_react2.useEffect)(() => {
-    if (onZoomPanReady && enableZoom) {
-      onZoomPanReady({
+    if (onZoomPanChange && enableZoom) {
+      onZoomPanChange({
         zoom,
         panX,
         panY,
@@ -228,7 +228,7 @@ function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanRe
     setPanValue,
     minZoom,
     maxZoom,
-    onZoomPanReady,
+    onZoomPanChange,
     enableZoom
   ]);
   const wrapperStyle = enableZoom ? {
@@ -259,7 +259,7 @@ var India = ({
   maxZoom = 3,
   zoomStep = 0.25,
   panStep = 20,
-  onZoomPanReady
+  onZoomPanChange
 }) => {
   const instanceId = (0, import_react2.useId)().replace(/:/g, "");
   const { x, y } = mouseTrack_default();
@@ -269,8 +269,11 @@ var India = ({
   const strokeProps = (0, import_react2.useMemo)(() => getStrokeProperties(borderStyle), [borderStyle]);
   const [selectedSingle, setSelectedSingle] = (0, import_react2.useState)(null);
   const [selectedMultiple, setSelectedMultiple] = (0, import_react2.useState)([]);
-  const isSelected = (state) => type === "select-single" ? selectedSingle === state : selectedMultiple.includes(state);
-  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady);
+  const isSelected = (0, import_react2.useCallback)(
+    (state) => type === "select-single" ? selectedSingle === state : selectedMultiple.includes(state),
+    [type, selectedSingle, selectedMultiple]
+  );
+  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange);
   (0, import_react2.useEffect)(() => {
     const svg = document.getElementById(`svg-${instanceId}`);
     if (svg) {
@@ -309,7 +312,7 @@ var India = ({
         }
       }
     },
-    [instanceId, disableHover, selectColor, hoverColor, onHover, selectedSingle, selectedMultiple, type]
+    [instanceId, disableHover, selectColor, hoverColor, onHover, isSelected]
   );
   const handleMouseLeave = (0, import_react2.useCallback)(
     (stateId) => {
@@ -325,7 +328,7 @@ var India = ({
         }
       }
     },
-    [instanceId, disableHover, selectColor, cityColors, mapColor, onHover, selectedSingle, selectedMultiple, type]
+    [instanceId, disableHover, selectColor, cityColors, mapColor, onHover, isSelected]
   );
   const handleClick = (0, import_react2.useCallback)(
     (stateId) => {
@@ -413,4 +416,4 @@ var India = ({
 var India_default = India;
 
 // src/index.ts
-var index_default = India_default;
+var src_default = India_default;

@@ -50,7 +50,7 @@ export interface IndiaProps {
   maxZoom?: number;
   zoomStep?: number;
   panStep?: number;
-  onZoomPanReady?: (controls: ZoomPanControls) => void;
+  onZoomPanChange?: (controls: ZoomPanControls) => void;
 }
 
 const getStrokeProperties = (borderStyle?: BorderStyle) => {
@@ -74,7 +74,7 @@ function useZoomPan(
   maxZoom: number,
   zoomStep: number,
   panStep: number,
-  onZoomPanReady?: (controls: ZoomPanControls) => void
+  onZoomPanChange?: (controls: ZoomPanControls) => void
 ) {
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
@@ -126,8 +126,8 @@ function useZoomPan(
   }, []);
 
   useEffect(() => {
-    if (onZoomPanReady && enableZoom) {
-      onZoomPanReady({
+    if (onZoomPanChange && enableZoom) {
+      onZoomPanChange({
         zoom,
         panX,
         panY,
@@ -153,7 +153,7 @@ function useZoomPan(
     setPanValue,
     minZoom,
     maxZoom,
-    onZoomPanReady,
+    onZoomPanChange,
     enableZoom,
   ]);
 
@@ -189,7 +189,7 @@ const India = ({
   maxZoom = 3,
   zoomStep = 0.25,
   panStep = 20,
-  onZoomPanReady,
+  onZoomPanChange,
 }: IndiaProps) => {
   const instanceId = useId().replace(/:/g, '');
   const { x, y } = useMousePosition();
@@ -201,10 +201,12 @@ const India = ({
   const [selectedSingle, setSelectedSingle] = useState<string | null>(null);
   const [selectedMultiple, setSelectedMultiple] = useState<string[]>([]);
 
-  const isSelected = (state: string) =>
-    type === 'select-single' ? selectedSingle === state : selectedMultiple.includes(state);
+  const isSelected = useCallback(
+    (state: string) => (type === 'select-single' ? selectedSingle === state : selectedMultiple.includes(state)),
+    [type, selectedSingle, selectedMultiple]
+  );
 
-  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanReady);
+  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange);
 
   useEffect(() => {
     const svg = document.getElementById(`svg-${instanceId}`) as SVGGraphicsElement | null;
@@ -248,7 +250,7 @@ const India = ({
         }
       }
     },
-    [instanceId, disableHover, selectColor, hoverColor, onHover, selectedSingle, selectedMultiple, type]
+    [instanceId, disableHover, selectColor, hoverColor, onHover, isSelected]
   );
 
   const handleMouseLeave = useCallback(
@@ -266,7 +268,7 @@ const India = ({
         }
       }
     },
-    [instanceId, disableHover, selectColor, cityColors, mapColor, onHover, selectedSingle, selectedMultiple, type]
+    [instanceId, disableHover, selectColor, cityColors, mapColor, onHover, isSelected]
   );
 
   const handleClick = useCallback(
