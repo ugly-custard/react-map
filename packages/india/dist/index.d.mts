@@ -26,6 +26,7 @@ interface ZoomPanControls {
     maxZoom: number;
 }
 type BorderStyle = 'solid' | 'dashed' | 'dotted' | 'dash-dot' | 'dash-double-dot';
+type ControlsPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 interface IndiaProps {
     type: 'select-single' | 'select-multiple';
     width?: number | string;
@@ -41,14 +42,16 @@ interface IndiaProps {
     disableHover?: boolean;
     onSelect?: (state: string | null, selectedStates?: string[]) => void;
     onHover?: (stateId: string | null) => void;
-    renderTooltip?: (props: TooltipRenderProps) => React.ReactNode;
+    renderTooltip?: boolean | ((props: TooltipRenderProps) => React.ReactNode);
     enableZoom?: boolean;
+    showControls?: boolean;
+    controlsPosition?: ControlsPosition;
     minZoom?: number;
     maxZoom?: number;
     zoomStep?: number;
     panStep?: number;
     onZoomPanChange?: (controls: ZoomPanControls) => void;
 }
-declare const India: ({ type, width, height, mapColor, strokeColor, strokeWidth, hoverColor, selectColor, borderStyle, cityColors, disableClick, disableHover, onSelect, onHover, renderTooltip, enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange, }: IndiaProps) => React.JSX.Element;
+declare const India: ({ type, width, height, mapColor, strokeColor, strokeWidth, hoverColor, selectColor, borderStyle, cityColors, disableClick, disableHover, onSelect, onHover, renderTooltip, enableZoom, showControls, controlsPosition, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange, }: IndiaProps) => React.JSX.Element;
 
 export { type IndiaProps, type TooltipRenderProps, type ZoomPanControls, India as default };

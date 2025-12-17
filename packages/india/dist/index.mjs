@@ -107,6 +107,85 @@ var useMousePosition = () => {
 var mouseTrack_default = useMousePosition;
 
 // src/India.tsx
+var defaultTooltipStyle = {
+  position: "fixed",
+  backgroundColor: "#1f2937",
+  color: "white",
+  padding: "6px 10px",
+  borderRadius: 6,
+  fontSize: 13,
+  fontWeight: 500,
+  pointerEvents: "none",
+  zIndex: 1e3,
+  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+  whiteSpace: "nowrap"
+};
+var controlButtonStyle = {
+  width: 28,
+  height: 28,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "white",
+  border: "none",
+  borderRadius: 4,
+  cursor: "pointer",
+  fontSize: 14,
+  color: "#374151",
+  transition: "background-color 0.15s ease",
+  margin: 0,
+  padding: 0
+};
+var controlsContainerStyle = {
+  position: "absolute",
+  display: "flex",
+  flexDirection: "column",
+  gap: 4,
+  padding: 4,
+  backgroundColor: "rgba(255, 255, 255, 0.95)",
+  borderRadius: 8,
+  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+  zIndex: 10
+};
+var controlsRowStyle = {
+  display: "flex",
+  gap: 4
+};
+var emptySlotStyle = {
+  width: 28,
+  height: 28
+};
+var getControlsPositionStyle = (position) => {
+  switch (position) {
+    case "top-left":
+      return { top: 10, left: 10 };
+    case "top-right":
+      return { top: 10, right: 10 };
+    case "bottom-left":
+      return { bottom: 10, left: 10 };
+    case "bottom-right":
+    default:
+      return { bottom: 10, right: 10 };
+  }
+};
+var DefaultTooltip = ({ state, position }) => {
+  if (!state) return null;
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      style: {
+        ...defaultTooltipStyle,
+        left: position.x + 10,
+        top: position.y + 10
+      }
+    },
+    state
+  );
+};
+var DefaultControls = ({ controls, position }) => {
+  const { zoomIn, zoomOut, reset, pan } = controls;
+  return /* @__PURE__ */ React.createElement("div", { style: { ...controlsContainerStyle, ...getControlsPositionStyle(position) } }, /* @__PURE__ */ React.createElement("div", { style: controlsRowStyle }, /* @__PURE__ */ React.createElement("div", { style: emptySlotStyle }), /* @__PURE__ */ React.createElement("button", { type: "button", style: controlButtonStyle, onClick: () => pan("up"), "aria-label": "Pan up" }, "\u2191"), /* @__PURE__ */ React.createElement("button", { type: "button", style: controlButtonStyle, onClick: zoomIn, "aria-label": "Zoom in" }, "+")), /* @__PURE__ */ React.createElement("div", { style: controlsRowStyle }, /* @__PURE__ */ React.createElement("button", { type: "button", style: controlButtonStyle, onClick: () => pan("left"), "aria-label": "Pan left" }, "\u2190"), /* @__PURE__ */ React.createElement("button", { type: "button", style: controlButtonStyle, onClick: reset, "aria-label": "Reset" }, "\u27F2"), /* @__PURE__ */ React.createElement("button", { type: "button", style: controlButtonStyle, onClick: () => pan("right"), "aria-label": "Pan right" }, "\u2192")), /* @__PURE__ */ React.createElement("div", { style: controlsRowStyle }, /* @__PURE__ */ React.createElement("div", { style: emptySlotStyle }), /* @__PURE__ */ React.createElement("button", { type: "button", style: controlButtonStyle, onClick: () => pan("down"), "aria-label": "Pan down" }, "\u2193"), /* @__PURE__ */ React.createElement("button", { type: "button", style: controlButtonStyle, onClick: zoomOut, "aria-label": "Zoom out" }, "\u2212")));
+};
 var getStrokeProperties = (borderStyle) => {
   switch (borderStyle) {
     case "dashed":
@@ -200,7 +279,20 @@ function useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanCh
     transformOrigin: "center center",
     transition: "transform 0.15s ease-out"
   } : {};
-  return { wrapperStyle };
+  const controls = {
+    zoom,
+    panX,
+    panY,
+    zoomIn,
+    zoomOut,
+    reset,
+    pan,
+    setZoom: setZoomValue,
+    setPan: setPanValue,
+    minZoom,
+    maxZoom
+  };
+  return { wrapperStyle, controls };
 }
 var India = ({
   type,
@@ -217,8 +309,10 @@ var India = ({
   disableHover = false,
   onSelect,
   onHover,
-  renderTooltip,
+  renderTooltip = true,
   enableZoom = false,
+  showControls = true,
+  controlsPosition = "bottom-right",
   minZoom = 1,
   maxZoom = 3,
   zoomStep = 0.25,
@@ -237,7 +331,7 @@ var India = ({
     (state) => type === "select-single" ? selectedSingle === state : selectedMultiple.includes(state),
     [type, selectedSingle, selectedMultiple]
   );
-  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange);
+  const { wrapperStyle, controls } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange);
   useEffect2(() => {
     const svg = document.getElementById(`svg-${instanceId}`);
     if (svg) {
@@ -370,7 +464,7 @@ var India = ({
         ...strokeProps
       }
     }
-  )))), renderTooltip?.({
+  )))), enableZoom && showControls && /* @__PURE__ */ React.createElement(DefaultControls, { controls, position: controlsPosition }), renderTooltip === true && /* @__PURE__ */ React.createElement(DefaultTooltip, { state: stateHovered, position: { x, y } }), typeof renderTooltip === "function" && renderTooltip({
     state: stateHovered,
     position: { x, y },
     isHovered: !!stateHovered,

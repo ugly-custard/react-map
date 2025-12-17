@@ -28,6 +28,136 @@ export interface ZoomPanControls {
 }
 
 type BorderStyle = 'solid' | 'dashed' | 'dotted' | 'dash-dot' | 'dash-double-dot';
+export type ControlsPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
+// Default tooltip styles
+const defaultTooltipStyle: React.CSSProperties = {
+  position: 'fixed',
+  backgroundColor: '#1f2937',
+  color: 'white',
+  padding: '6px 10px',
+  borderRadius: 6,
+  fontSize: 13,
+  fontWeight: 500,
+  pointerEvents: 'none',
+  zIndex: 1000,
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  whiteSpace: 'nowrap',
+};
+
+// Default controls styles
+const controlButtonStyle: React.CSSProperties = {
+  width: 28,
+  height: 28,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'white',
+  border: 'none',
+  borderRadius: 4,
+  cursor: 'pointer',
+  fontSize: 14,
+  color: '#374151',
+  transition: 'background-color 0.15s ease',
+  margin: 0,
+  padding: 0,
+};
+
+const controlsContainerStyle: React.CSSProperties = {
+  position: 'absolute',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 4,
+  padding: 4,
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  borderRadius: 8,
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  zIndex: 10,
+};
+
+const controlsRowStyle: React.CSSProperties = {
+  display: 'flex',
+  gap: 4,
+};
+
+const emptySlotStyle: React.CSSProperties = {
+  width: 28,
+  height: 28,
+};
+
+const getControlsPositionStyle = (position: ControlsPosition): React.CSSProperties => {
+  switch (position) {
+    case 'top-left':
+      return { top: 10, left: 10 };
+    case 'top-right':
+      return { top: 10, right: 10 };
+    case 'bottom-left':
+      return { bottom: 10, left: 10 };
+    case 'bottom-right':
+    default:
+      return { bottom: 10, right: 10 };
+  }
+};
+
+// Default tooltip component
+const DefaultTooltip = ({ state, position }: { state: string | null; position: { x: number; y: number } }) => {
+  if (!state) return null;
+  return (
+    <div
+      style={{
+        ...defaultTooltipStyle,
+        left: position.x + 10,
+        top: position.y + 10,
+      }}
+    >
+      {state}
+    </div>
+  );
+};
+
+// Default zoom/pan controls component
+const DefaultControls = ({ controls, position }: { controls: ZoomPanControls; position: ControlsPosition }) => {
+  const { zoomIn, zoomOut, reset, pan } = controls;
+
+  return (
+    <div style={{ ...controlsContainerStyle, ...getControlsPositionStyle(position) }}>
+      {/* Row 1: _, up, zoom+ */}
+      <div style={controlsRowStyle}>
+        <div style={emptySlotStyle} />
+        <button type="button" style={controlButtonStyle} onClick={() => pan('up')} aria-label="Pan up">
+          ↑
+        </button>
+        <button type="button" style={controlButtonStyle} onClick={zoomIn} aria-label="Zoom in">
+          +
+        </button>
+      </div>
+
+      {/* Row 2: left, reset, right */}
+      <div style={controlsRowStyle}>
+        <button type="button" style={controlButtonStyle} onClick={() => pan('left')} aria-label="Pan left">
+          ←
+        </button>
+        <button type="button" style={controlButtonStyle} onClick={reset} aria-label="Reset">
+          ⟲
+        </button>
+        <button type="button" style={controlButtonStyle} onClick={() => pan('right')} aria-label="Pan right">
+          →
+        </button>
+      </div>
+
+      {/* Row 3: _, down, zoom- */}
+      <div style={controlsRowStyle}>
+        <div style={emptySlotStyle} />
+        <button type="button" style={controlButtonStyle} onClick={() => pan('down')} aria-label="Pan down">
+          ↓
+        </button>
+        <button type="button" style={controlButtonStyle} onClick={zoomOut} aria-label="Zoom out">
+          −
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export interface IndiaProps {
   type: 'select-single' | 'select-multiple';
@@ -44,8 +174,10 @@ export interface IndiaProps {
   disableHover?: boolean;
   onSelect?: (state: string | null, selectedStates?: string[]) => void;
   onHover?: (stateId: string | null) => void;
-  renderTooltip?: (props: TooltipRenderProps) => React.ReactNode;
+  renderTooltip?: boolean | ((props: TooltipRenderProps) => React.ReactNode);
   enableZoom?: boolean;
+  showControls?: boolean;
+  controlsPosition?: ControlsPosition;
   minZoom?: number;
   maxZoom?: number;
   zoomStep?: number;
@@ -165,7 +297,21 @@ function useZoomPan(
       }
     : {};
 
-  return { wrapperStyle };
+  const controls: ZoomPanControls = {
+    zoom,
+    panX,
+    panY,
+    zoomIn,
+    zoomOut,
+    reset,
+    pan,
+    setZoom: setZoomValue,
+    setPan: setPanValue,
+    minZoom,
+    maxZoom,
+  };
+
+  return { wrapperStyle, controls };
 }
 
 const India = ({
@@ -183,8 +329,10 @@ const India = ({
   disableHover = false,
   onSelect,
   onHover,
-  renderTooltip,
+  renderTooltip = true,
   enableZoom = false,
+  showControls = true,
+  controlsPosition = 'bottom-right',
   minZoom = 1,
   maxZoom = 3,
   zoomStep = 0.25,
@@ -206,7 +354,7 @@ const India = ({
     [type, selectedSingle, selectedMultiple]
   );
 
-  const { wrapperStyle } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange);
+  const { wrapperStyle, controls } = useZoomPan(enableZoom, minZoom, maxZoom, zoomStep, panStep, onZoomPanChange);
 
   useEffect(() => {
     const svg = document.getElementById(`svg-${instanceId}`) as SVGGraphicsElement | null;
@@ -359,12 +507,16 @@ const India = ({
         </svg>
       </div>
 
-      {renderTooltip?.({
-        state: stateHovered,
-        position: { x, y },
-        isHovered: !!stateHovered,
-        isSelected: stateHovered ? isSelected(stateHovered) : false,
-      })}
+      {enableZoom && showControls && <DefaultControls controls={controls} position={controlsPosition} />}
+
+      {renderTooltip === true && <DefaultTooltip state={stateHovered} position={{ x, y }} />}
+      {typeof renderTooltip === 'function' &&
+        renderTooltip({
+          state: stateHovered,
+          position: { x, y },
+          isHovered: !!stateHovered,
+          isSelected: stateHovered ? isSelected(stateHovered) : false,
+        })}
     </div>
   );
 };
